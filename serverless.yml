@@ -1,0 +1,80 @@
+# NOTE: update this with your service name
+service: notes-app-api
+
+# Create an optimized package for our functions 
+package:
+  individually: true
+
+plugins:
+  - serverless-bundle # Package our functions with Webpack
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: dev
+  region: eu-central-1
+  # 'iamRoleStatements' defines the permission policy for the Lambda function.     # Any container with this Lambda will get role decribed in bottom.
+  # In this case Lambda functions are granted with permissions to access DynamoDB.
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:eu-central-1:022148915033:table/notes"  # only for our table named notes
+  # To load environment variables externally
+  # rename env.example to env.yml and uncomment
+  # the following line. Also, make sure to not
+  # commit your env.yml.
+  #
+  #environment: ${file(env.yml):${self:provider.stage}}
+
+functions:
+  # Defines an HTTP API endpoint that calls the main function in create.js
+  # - path: url path is /notes
+  # - method: POST request
+  # - cors: enabled CORS (Cross-Origin Resource Sharing) for browser cross
+  #     domain api call
+  # - authorizer: authenticate using the AWS IAM role
+  create:
+    handler: create.main
+    events:
+      - http:
+          path: notes
+          method: post
+          cors: true
+          authorizer: aws_iam   # restrict access to this API based on the user's IAM Credentials
+  list:
+    handler: list.main
+    events: 
+      - http:
+          path: notes
+          method: get
+          cors: true
+          autorizer: aws_iam
+
+  update:
+    handler: update.main
+    events:
+      - http:
+          path: notes/{id}   # we pass noteId as url path parameter
+          method: put
+          cors: true
+          authorizer: aws_iam
+  delete:
+    handler: delete.main
+    events:
+      - http:
+          path: notes/{id}   # we pass noteId as url path parameter
+          method: delete
+          cors: true
+          authorizer: aws_iam       
+# Create our resources with searate CloudFormation templates
+resources:                     
+  # API Gateway Errors
+  - ${file(resources/api-gateway-errors.yml)}  # configures CORS headers for API gateway 400 and 500 errors (client and server errors)

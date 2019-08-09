@@ -1,0 +1,11 @@
+{
+  "body": "{\"content\":\"The Two Towers. A new power is rising. It's victory is at hand. Tonight land will be stained with the blood od Rohan. March to Helm's Deep, leave none alive\",\"attachment\":\"Ortank.jpg\"}",
+  "pathParameters": {
+    "id": "6d2284f0-b77b-11e9-92a2-6f557aafa872"
+  },
+  "requestContext": {
+    "identity": {
+      "cognitoIdentityId": "USER-SUB-1234"
+    }
+  }
+}
